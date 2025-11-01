@@ -1,0 +1,15 @@
+ # GPU Image Generation Dependencies
+  # To be populated in Phase 2
+
+  # Core dependencies (will be added):
+  # torch>=2.0.0
+  # diffusers>=0.21.0
+  # transformers>=4.30.0
+  # accelerate>=0.20.0
+  # safetensors>=0.3.1
+
+  # Server dependencies (will be added):
+  # fastapi>=0.100.0
+  # uvicorn[standard]>=0.23.0
+  # python-multipart>=0.0.6
+  # slowapi>=0.1.8
