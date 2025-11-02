@@ -43,7 +43,8 @@ class Settings(BaseSettings):
     # API settings
     max_concurrent_requests: int = Field(default=2, description="Max concurrent image generations")
     request_timeout: int = Field(default=60, description="Request timeout in seconds")
-    
+    api_key: str | None = Field(default=None, description="Optional API key for Bearer token auth")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

@@ -20,11 +20,12 @@ logger = logging.getLogger(__name__)
 
 class ImageGenerator:
     """Stable Diffusion image generator with optimized settings"""
-    
+
     def __init__(self):
         self.pipe = None
         self.device = settings.device
         self.model_loaded = False
+        self.last_seed = None  # Track last used seed for response headers
         
     def load_model(self) -> None:
         """
@@ -75,30 +76,33 @@ class ImageGenerator:
         
     def _configure_scheduler(
         self,
-        scheduler_type: Literal["DPMSolver++", "EulerAncestral"] = "DPMSolver++"
+        scheduler_type: Literal["DPMSolver++", "EulerAncestral", "dpmsolver++", "euler_ancestral"] = "DPMSolver++"
     ) -> None:
         """
         Configure the diffusion scheduler
-        
+
         Args:
-            scheduler_type: Type of scheduler to use
-                - "DPMSolver++": DPMSolver++ 2M with Karras sigmas (default, Codex recommended)
-                - "EulerAncestral": Euler Ancestral (classic SD 1.5 look)
+            scheduler_type: Type of scheduler to use (case-insensitive)
+                - "dpmsolver++" or "DPMSolver++": DPMSolver++ 2M with Karras sigmas (default, Codex recommended)
+                - "euler_ancestral" or "EulerAncestral": Euler Ancestral (classic SD 1.5 look)
         """
-        if scheduler_type == "DPMSolver++":
+        # Normalize to lowercase for comparison
+        scheduler_lower = scheduler_type.lower()
+
+        if scheduler_lower == "dpmsolver++":
             self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(
                 self.pipe.scheduler.config,
                 algorithm_type="dpmsolver++",
                 use_karras_sigmas=settings.use_karras_sigmas
             )
             logger.info("Configured DPMSolver++ 2M scheduler with Karras sigmas")
-            
-        elif scheduler_type == "EulerAncestral":
+
+        elif scheduler_lower == "euler_ancestral" or scheduler_lower == "eulerancestral":
             self.pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(
                 self.pipe.scheduler.config
             )
             logger.info("Configured Euler Ancestral scheduler")
-            
+
         else:
             raise ValueError(f"Unknown scheduler type: {scheduler_type}")
     
@@ -111,10 +115,11 @@ class ImageGenerator:
         height: Optional[int] = None,
         width: Optional[int] = None,
         seed: Optional[int] = None,
+        scheduler: Optional[Literal["dpmsolver++", "euler_ancestral"]] = None,
     ) -> bytes:
         """
         Generate image from prompt
-        
+
         Args:
             prompt: Text description of desired image
             negative_prompt: Things to avoid in the image
@@ -122,27 +127,37 @@ class ImageGenerator:
             guidance_scale: How closely to follow prompt (default: 7.0 from Codex)
             height: Image height in pixels (default: 512)
             width: Image width in pixels (default: 512)
-            seed: Random seed for reproducibility (optional)
-            
+            seed: Random seed for reproducibility (auto-generated if None)
+            scheduler: Scheduler type (dpmsolver++ or euler_ancestral)
+
         Returns:
             Image as PNG bytes
         """
         if not self.model_loaded:
             raise RuntimeError("Model not loaded. Call load_model() first.")
-        
+
         # Use defaults from config if not specified
         num_inference_steps = num_inference_steps or settings.default_steps
         guidance_scale = guidance_scale or settings.default_guidance_scale
         height = height or settings.default_height
         width = width or settings.default_width
-        
-        logger.info(f"Generating image: prompt='{prompt[:50]}...', steps={num_inference_steps}, guidance={guidance_scale}")
-        
-        # Set random seed if provided
-        generator = None
-        if seed is not None:
-            generator = torch.Generator(device=self.device).manual_seed(seed)
-            logger.info(f"Using seed: {seed}")
+
+        # Generate seed if not provided
+        if seed is None:
+            import random
+            seed = random.randint(0, 2**32 - 1)
+
+        # Track seed for response headers
+        self.last_seed = seed
+
+        # Configure scheduler if specified
+        if scheduler is not None:
+            self._configure_scheduler(scheduler)
+
+        logger.info(f"Generating image: prompt='{prompt[:50]}...', steps={num_inference_steps}, guidance={guidance_scale}, seed={seed}")
+
+        # Create generator with seed
+        generator = torch.Generator(device=self.device).manual_seed(seed)
         
         # Generate image
         result = self.pipe(
