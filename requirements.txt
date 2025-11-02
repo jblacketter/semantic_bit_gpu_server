@@ -1,15 +1,25 @@
- # GPU Image Generation Dependencies
-  # To be populated in Phase 2
+# GPU Image Generation Microservice Dependencies
+# Phase 2 - FastAPI Server Implementation
 
-  # Core dependencies (will be added):
-  # torch>=2.0.0
-  # diffusers>=0.21.0
-  # transformers>=4.30.0
-  # accelerate>=0.20.0
-  # safetensors>=0.3.1
+# PyTorch with CUDA support
+# Install with: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+torch>=2.5.1
+torchvision>=0.20.1
 
-  # Server dependencies (will be added):
-  # fastapi>=0.100.0
-  # uvicorn[standard]>=0.23.0
-  # python-multipart>=0.0.6
-  # slowapi>=0.1.8
+# Stable Diffusion
+diffusers>=0.35.0
+transformers>=4.57.0
+accelerate>=1.11.0
+safetensors>=0.6.0
+
+# FastAPI Server
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.20
+pydantic>=2.10.0
+pydantic-settings>=2.7.0
+
+# Utilities
+python-dotenv>=1.0.0
+
+# For exact versions used in Phase 1 testing, see requirements.lock.txt

@@ -1,0 +1,40 @@
+# Exact versions from Phase 1 testing (2025-10-31)
+# Validated on: Ubuntu 24.04 LTS, Python 3.12.3, CUDA 12.1
+# Performance: 2.62s avg generation time (RTX 4070 Super)
+
+# PyTorch with CUDA 12.1 support
+--index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
+
+# Stable Diffusion core
+diffusers==0.35.2
+transformers==4.57.1
+accelerate==1.11.0
+safetensors==0.6.2
+
+# HuggingFace Hub
+huggingface-hub==0.36.0
+
+# Dependencies
+filelock==3.19.1
+fsspec==2025.9.0
+packaging==25.0
+pyyaml==6.0.3
+regex==2025.10.23
+tqdm==4.67.1
+typing-extensions==4.15.0
+certifi==2025.10.5
+charset-normalizer==3.4.4
+idna==3.11
+requests==2.32.5
+urllib3==2.5.0
+hf-xet==1.2.0
+tokenizers==0.22.1
+psutil==7.1.2
+
+# Server (to be added)
+# fastapi
+# uvicorn[standard]
+# python-multipart
+# pydantic
